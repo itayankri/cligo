@@ -5,14 +5,20 @@ import (
 	"go/ast"
 	"go/parser"
 	"go/token"
+	"os"
+	"strings"
 )
 
 func main() {
 	fset := token.NewFileSet() // positions are relative to fset
 
+	pathToPackageDir := strings.ReplaceAll(os.Args[1], "\\", "/") + "/"
+	endpoints := strings.Split(pathToPackageDir, "/")
+	packageName := endpoints[len(endpoints)-2]
+
 	packages, err := parser.ParseDir(
 		fset,
-		"C:\\Users\\Itay\\Projects\\src\\github.com\\itayankri\\caf\\internal\\pkg\\validators\\jsonvalidator",
+		pathToPackageDir,
 		nil,
 		parser.ParseComments)
 
@@ -20,9 +26,11 @@ func main() {
 		panic(err)
 	}
 
-	exportedFunctions := getAllExportedFunctions(packages["jsonvalidator"])
+	exportedFunctions := getAllExportedFunctions(packages[packageName])
 
-	fmt.Println(exportedFunctions)
+	for index, exportedFunction := range exportedFunctions {
+		fmt.Printf("function #%d - %s\n", index, exportedFunction.Name.Name)
+	}
 }
 
 func getAllExportedFunctions(pkg *ast.Package) []*ast.FuncDecl {
@@ -30,11 +38,17 @@ func getAllExportedFunctions(pkg *ast.Package) []*ast.FuncDecl {
 
 	for _, file := range pkg.Files {
 		for _, decl := range file.Decls {
-			if v, ok := decl.(*ast.FuncDecl); ok {
-				exportedFunctions = append(exportedFunctions, v)
+			if funcDecl, ok := decl.(*ast.FuncDecl); ok {
+				if isExported(funcDecl.Name.Name) {
+					exportedFunctions = append(exportedFunctions, funcDecl)
+				}
 			}
 		}
 	}
 
 	return exportedFunctions
+}
+
+func isExported(functionName string) bool {
+	return functionName[0] > 'A' && functionName[0] < 'Z'
 }
