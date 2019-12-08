@@ -42,6 +42,11 @@ func getAllExportedFunctions(pkg *ast.Package) []*ast.FuncDecl {
 				if isExported(funcDecl.Name.Name) {
 					exportedFunctions = append(exportedFunctions, funcDecl)
 				}
+
+				annotations := getAnnotations(funcDecl.Name.Name, funcDecl.Doc)
+				for index, ann := range annotations {
+					fmt.Printf("annotation #%d - %s\n", index, *ann)
+				}
 			}
 		}
 	}
@@ -49,6 +54,29 @@ func getAllExportedFunctions(pkg *ast.Package) []*ast.FuncDecl {
 	return exportedFunctions
 }
 
+func getAnnotations(functionName string, doc *ast.CommentGroup) []*annotation {
+	if doc == nil {
+		return nil
+	}
+
+	annotations := make([]*annotation, 0)
+
+	for _, comment := range doc.List {
+		switch {
+		case strings.Contains(comment.Text, string(CLIGO_COMMAND)):
+			{
+				annotations = append(annotations, &annotation{CLIGO_COMMAND, functionName, ""})
+			}
+		case strings.Contains(comment.Text, string(CLIGO_ARGUMENT)):
+			{
+				annotations = append(annotations, &annotation{CLIGO_ARGUMENT, "", ""})
+			}
+		}
+	}
+
+	return annotations
+}
+
 func isExported(functionName string) bool {
-	return functionName[0] > 'A' && functionName[0] < 'Z'
+	return functionName[0] >= 'A' && functionName[0] <= 'Z'
 }
