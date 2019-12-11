@@ -13,7 +13,7 @@ func main() {
 	fset := token.NewFileSet() // positions are relative to fset
 
 	// TODO: fix later
-	goPath := strings.Split(os.Getenv("GOPATH"), ";")[1]
+	goPath := os.Getenv("GOPATH")
 
 	//
 	relativePathToPackage := strings.ReplaceAll(os.Args[1], "\\", "/")

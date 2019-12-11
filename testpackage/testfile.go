@@ -2,7 +2,6 @@ package testpackage
 
 import (
 	"fmt"
-	"strconv"
 )
 
 // A1 is an exported const
@@ -13,20 +12,19 @@ const a1 = 4
 
 // A is an exported function called A
 // Test comment
+// @CLIGO_COMMAND
 // @CLIGO_OPTION(option1: O1)
 // @CLIGO_OPTION(option2: O2)
 // @CLIGO_ARGUMENT(arg1: x)
 // @CLIGO_ARGUMENT(arg2: y)
-func A(option1, option2 bool, arg1, arg2 int) {
-	fmt.Println("executing function A() - option1=" +
-		strconv.FormatBool(option1) +
-		"option2=" +
-		strconv.FormatBool(option2))
+func Remove( /*option1, option2 bool, arg1, arg2 int*/ ) {
+	fmt.Println("executing function Remove()")
 }
 
+// @CLIGO_COMMAND
 // a is an unexported function called a
-func a() {
-	fmt.Println("executing function a()")
+func Install() {
+	fmt.Println("executing function Install()")
 }
 
 // @CLIGO_ARGUMENT(a: min)
