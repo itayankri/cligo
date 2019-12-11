@@ -33,6 +33,10 @@ func main() {
 	}
 
 	// TODO: Phase 2 - Call a function that creates a cli tool
+	err = generateCLITool(commands)
+	if err != nil {
+		panic(err)
+	}
 
 	// TODO: Remove this block when Phase 2 is done.
 	for i, command := range commands {
