@@ -12,8 +12,19 @@ import (
 func main() {
 	fset := token.NewFileSet() // positions are relative to fset
 
-	pathToPackageDir := strings.ReplaceAll(os.Args[1], "\\", "/") + "/"
+	// TODO: fix later
+	goPath := strings.Split(os.Getenv("GOPATH"), ";")[1]
+
+	//
+	relativePathToPackage := strings.ReplaceAll(os.Args[1], "\\", "/")
+
+	//
+	pathToPackageDir := strings.ReplaceAll(goPath+"\\src\\"+os.Args[1], "\\", "/") + "/"
+
+	//
 	endpoints := strings.Split(pathToPackageDir, "/")
+
+	//
 	packageName := endpoints[len(endpoints)-2]
 
 	packages, err := parser.ParseDir(
@@ -33,22 +44,22 @@ func main() {
 	}
 
 	// TODO: Phase 2 - Call a function that creates a cli tool
-	err = generateCLITool(commands)
+	err = generateCLITool(packageName, relativePathToPackage, commands)
 	if err != nil {
 		panic(err)
 	}
 
 	// TODO: Remove this block when Phase 2 is done.
-	for i, command := range commands {
-		fmt.Printf("command #%d - %s\n", i, command.name)
-		for j, argument := range command.arguments {
-			fmt.Printf("\targument #%d - %s\n", j, argument.name)
-		}
-
-		for j, option := range command.options {
-			fmt.Printf("\targument #%d - --%s\n", j, option.name)
-		}
-	}
+	//for i, command := range commands {
+	//	fmt.Printf("command #%d - %s\n", i, command.name)
+	//	for j, argument := range command.arguments {
+	//		fmt.Printf("\targument #%d - %s\n", j, argument.name)
+	//	}
+	//
+	//	for j, option := range command.options {
+	//		fmt.Printf("\targument #%d - --%s\n", j, option.name)
+	//	}
+	//}
 }
 
 func parseAnnotations(pkg *ast.Package) ([]*command, error) {

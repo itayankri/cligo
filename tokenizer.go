@@ -1,10 +1,5 @@
 package main
 
-import (
-	"github.com/pkg/errors"
-	"strconv"
-)
-
 //type TokenKind int
 //
 //const (
@@ -51,7 +46,7 @@ func lex(comment string) ([]*Token, error) {
 			tok = tok + string(char)
 		case '/':
 		default:
-			return nil, errors.New("invalid character '" + string(char) + "' at position " + strconv.Itoa(index))
+			//return nil, errors.New("invalid character '" + string(char) + "' at position " + strconv.Itoa(index))
 		}
 	}
 

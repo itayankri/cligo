@@ -13,7 +13,6 @@ const a1 = 4
 
 // A is an exported function called A
 // Test comment
-// @CLIGO_COMMAND(install)
 // @CLIGO_OPTION(option1: O1)
 // @CLIGO_OPTION(option2: O2)
 // @CLIGO_ARGUMENT(arg1: x)
@@ -26,7 +25,6 @@ func A(option1, option2 bool, arg1, arg2 int) {
 }
 
 // a is an unexported function called a
-// @CLIGO_COMMAND(alias)
 func a() {
 	fmt.Println("executing function a()")
 }
@@ -57,6 +55,6 @@ func fn() {
 Z is an exported function called Z
 @CLIGO_COMMAND
 */
-func Z() {
-	fmt.Println("executing function Z()")
+func Chumis() {
+	fmt.Println("executing function Chumis()")
 }

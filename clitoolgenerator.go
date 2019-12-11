@@ -2,35 +2,66 @@ package main
 
 import (
 	"fmt"
+	"github.com/pkg/errors"
+	"io/ioutil"
+	"os/exec"
 )
 
-func generateCLITool(commands []*command) error {
+func generateCLITool(packageName, pathToPackage string, commands []*command) error {
+	file := fmt.Sprintf(`
+// Package declaration
+%s
+
+// Imports
+%s
+
+// Main func
+%s
+	`, generatePackage(packageName), generateImports(pathToPackage), generateMain(packageName, commands))
+
+	err := ioutil.WriteFile("executables/"+packageName+"_cligo.go", []byte(file), 0644)
+	if err != nil {
+		return errors.Wrap(err, "failed to write go file")
+	}
+
+	cmd := exec.Command("go", "build", "-o", "executables/"+packageName+"_cligo.exe", "executables/"+packageName+"_cligo.go")
+
+	err = cmd.Run()
+	if err != nil {
+		return errors.Wrap(err, "failed to compile go file")
+	}
+
 	return nil
 }
 
 func generatePackage(packageName string) string {
-	return fmt.Sprintf("package %s\n", packageName)
+	return fmt.Sprintf("package main")
 }
 
 func generateImports(pathToPackage string) string {
 	return fmt.Sprintf(`
-		import (
-			"flag"
-			"%s"
-		)
+import (
+	"errors"
+	"flag"
+	"os"
+	"%s"
+)
 	`, pathToPackage)
 }
 
-func generateMain(commands []*command) string {
+func generateMain(packageName string, commands []*command) string {
 	return fmt.Sprintf(`
-		func main() {
-			// Commands
+func main() {
+	// Commands
+	%s
 
-			// Flag-Pointers
+	// Flag-Pointers
+	%s
 
-			// Switch-Case
-		}
-	`)
+	// Switch-Case
+	%s
+}
+	`, generateCommands(commands), generateFlags(commands), generateSwitch(packageName, commands))
 }
 
 func generateCommands(commands []*command) string {
@@ -111,18 +142,45 @@ func generateFlag(cmdName string, arg argument) string {
 	return ""
 }
 
-func generateSwitch(commands []*command) string {
-	return ""
+func generateSwitch(packageName string, commands []*command) string {
+	return fmt.Sprintf("switch os.Args[1] {\n" + generateCases(packageName, commands) + "\n}")
 }
 
-func generateCase(commands []*command) string {
-	return ""
+func generateCases(packageName string, commands []*command) string {
+	cases := ""
+
+	for _, cmd := range commands {
+		cases += generateCase(packageName, *cmd)
+	}
+
+	cases += generateDefaultCase()
+
+	return cases
+}
+
+func generateCase(packageName string, command command) string {
+	return fmt.Sprintf(`
+case "%s":
+	{
+		%s.Parse(os.Args[2:])
+		%s.%s()
+	}
+	`, command.name, command.name, packageName, command.name)
 }
 
 func generateDefaultCase() string {
-	return ""
+	return fmt.Sprintf(`
+default:
+	{
+		panic(errors.New("unrecognized command - " + os.Args[1]))
+	}
+	`)
 }
 
 func generateManPage(commands []*command) string {
+	return "Man page"
+}
+
+func generateParseCheckBlock(command command) string {
 	return ""
 }
