@@ -41,7 +41,6 @@ func generatePackage(packageName string) string {
 func generateImports(pathToPackage string) string {
 	return fmt.Sprintf(`
 import (
-	"errors"
 	"flag"
 	"fmt"
 	"os"
@@ -53,6 +52,11 @@ import (
 func generateMain(packageName string, commands []*command) string {
 	return fmt.Sprintf(`
 func main() {
+	if len(os.Args) < 2 {
+        fmt.Println("subcommand is required")
+        os.Exit(1)
+    }
+
 	// Commands
 	%s
 
@@ -174,7 +178,9 @@ func generateDefaultCase() string {
 	return fmt.Sprintf(`
 default:
 	{
-		panic(errors.New("unrecognized command - " + os.Args[1]))
+		//panic(errors.New("unrecognized command - " + os.Args[1]))
+		fmt.Println("unrecognized command - " + os.Args[1] + ", use --help for more information")
+		os.Exit(1)
 	}
 	`)
 }
