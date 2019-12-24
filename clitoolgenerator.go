@@ -93,53 +93,60 @@ func generateFlags(commands []*command) string {
 
 func generateFlag(cmdName string, arg argument) string {
 	switch arg._type {
-	case "Int":
+	case "int":
 		{
-			return fmt.Sprintf("%s := \"%s\".Int(\"%s\", 0, \"Explanation here\")\n",
+			return fmt.Sprintf("%s_%s := %s.Int(\"%s\", 0, \"Explanation here\")\n",
 				cmdName,
 				arg.name,
+				cmdName,
 				arg.name)
 		}
-	case "Int64":
+	case "int64":
 		{
-			return fmt.Sprintf("%s := \"%s\".Int64(\"%s\", 0, \"Explanation here\")\n",
+			return fmt.Sprintf("%s_%s := %s.Int64(\"%s\", 0, \"Explanation here\")\n",
 				cmdName,
 				arg.name,
+				cmdName,
 				arg.name)
 		}
-	case "Uint":
+	case "uint":
 		{
-			return fmt.Sprintf("%s := \"%s\".Uint(\"%s\", 0, \"Explanation here\")\n",
+			return fmt.Sprintf("%s_%s := %s.Uint(\"%s\", 0, \"Explanation here\")\n",
 				cmdName,
 				arg.name,
+				cmdName,
 				arg.name)
 		}
-	case "Uint64":
+	case "uint64":
 		{
-			return fmt.Sprintf("%s := \"%s\".Uint64(\"%s\", 0, \"Explanation here\")\n",
+			return fmt.Sprintf("%s_%s := %s.Uint64(\"%s\", 0, \"Explanation here\")\n",
 				cmdName,
 				arg.name,
+				cmdName,
 				arg.name)
 		}
-	case "Float64":
+	case "float64":
 		{
-			return fmt.Sprintf("%s := \"%s\".Float64(\"%s\", 0, \"Explanation here\")\n",
+			return fmt.Sprintf("%s_%s := %s.Float64(\"%s\", 0, \"Explanation here\")\n",
 				cmdName,
 				arg.name,
+				cmdName,
 				arg.name)
 		}
-	case "String":
+	case "string":
 		{
-			return fmt.Sprintf("%s := \"%s\".String(\"%s\", \"\", \"Explanation here\")\n",
+			return fmt.Sprintf("%s_%s := %s.String(\"%s\", \"\", \"Explanation here\")\n",
 				cmdName,
 				arg.name,
+				cmdName,
 				arg.name)
 		}
-	case "Bool":
+	case "bool":
 		{
-			return fmt.Sprintf("%s := \"%s\".Bool(\"%s\", false, \"Explanation here\")\n",
+			return fmt.Sprintf("%s_%s := %s.Bool(\"%s\", false, \"Explanation here\")\n",
 				cmdName,
 				arg.name,
+				cmdName,
 				arg.name)
 		}
 	}
@@ -168,10 +175,28 @@ func generateCase(packageName string, command command) string {
 	return fmt.Sprintf(`
 case "%s":
 	{
-		%s.Parse(os.Args[2:])
-		%s.%s()
+		err := %s.Parse(os.Args[2:])
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(2)
+		}
+		%s.%s(`+generateArguments(command)+`)
 	}
 	`, command.name, command.name, packageName, command.name)
+}
+
+func generateArguments(command command) string {
+	if command.arguments == nil || len(command.arguments) == 0 {
+		return ""
+	}
+
+	arguments := ""
+
+	for _, arg := range command.arguments {
+		arguments += "*" + command.name + "_" + arg.name + ","
+	}
+
+	return arguments[:len(arguments)-1]
 }
 
 func generateDefaultCase() string {

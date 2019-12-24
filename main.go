@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"errors"
 	"go/ast"
 	"go/parser"
 	"go/token"
@@ -75,16 +75,27 @@ func parseAnnotations(pkg *ast.Package) ([]*command, error) {
 
 				for _, tok := range tokens {
 					if tok.value == string(CLIGO_COMMAND) {
-						//alias, err := parseCommandAnnotation(tokens, index)
-						//if err != nil {
-						//	return nil, err
-						//}
-
 						command := &command{
 							funcDecl.Name.Name,
 							"",
 							make([]*argument, 0),
 							make([]*option, 0),
+						}
+
+						for _, argList := range funcDecl.Type.Params.List {
+							if _type, ok := argList.Type.(*ast.Ident); ok {
+								for _, arg := range argList.Names {
+									//fmt.Println(arg)
+									argument := &argument{
+										arg.Name,
+										make([]string, 0),
+										_type.Name,
+									}
+									command.arguments = append(command.arguments, argument)
+								}
+							} else {
+								return nil, errors.New("argument type is not of type ast.Ident")
+							}
 						}
 
 						commands = append(commands, command)
@@ -95,36 +106,6 @@ func parseAnnotations(pkg *ast.Package) ([]*command, error) {
 	}
 
 	return commands, nil
-}
-
-func parseCommandAnnotation(tokens []*Token, pos int) (string, error) {
-	// If the annotation contains parentheses, set the value in them a an alias of the command.
-	if tokens[pos+1].value == "(" && tokens[pos+3].value == ")" {
-		return tokens[pos+2].value, nil
-	}
-
-	return "", nil
-}
-
-func parseArgumentAnnotation(comment string) (*argument, error) {
-	return nil, nil
-}
-
-func parseOptionAnnotation(comment string) (*option, error) {
-	return nil, nil
-}
-
-func parseCommandAnnotation2(functionName, comment string) (*command, error) {
-	tokens, err := lex(comment)
-	if err != nil {
-		return nil, err
-	}
-
-	for i := 0; i < len(tokens); i++ {
-		fmt.Println(tokens[i].value)
-	}
-
-	return nil, nil
 }
 
 //func getAllExportedFunctions(pkg *ast.Package) []*ast.FuncDecl {

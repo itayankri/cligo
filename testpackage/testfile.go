@@ -27,11 +27,12 @@ func Install() {
 	fmt.Println("executing function Install()")
 }
 
+// @CLIGO_COMMAND
 // @CLIGO_ARGUMENT(a: min)
 // @CLIGO_ARGUMENT(b: max)
 // B is an exported function called B
-func B(a, b int) {
-	fmt.Println("executing function B()")
+func B(a, b int, c bool) {
+	fmt.Printf("executing function B() with arguments - a = %d | b = %d | c = %v", a, b, c)
 }
 
 // c is an unexported function called c

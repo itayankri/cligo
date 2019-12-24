@@ -8,13 +8,13 @@ type command struct {
 }
 
 type argument struct {
-	name  string
-	alias string
-	_type string
+	name    string
+	aliases []string
+	_type   string
 }
 
 type option struct {
-	name  string
-	alias string
-	_type string
+	name    string
+	aliases []string
+	_type   string
 }
