@@ -2,9 +2,9 @@ package main
 
 type command struct {
 	name      string
+	funcName  string
 	alias     string
 	arguments []*argument
-	options   []*option
 }
 
 type argument struct {

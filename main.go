@@ -75,30 +75,36 @@ func parseAnnotations(pkg *ast.Package) ([]*command, error) {
 
 				for _, tok := range tokens {
 					if tok.value == string(CLIGO_COMMAND) {
-						command := &command{
-							funcDecl.Name.Name,
-							"",
-							make([]*argument, 0),
-							make([]*option, 0),
-						}
-
-						for _, argList := range funcDecl.Type.Params.List {
-							if _type, ok := argList.Type.(*ast.Ident); ok {
-								for _, arg := range argList.Names {
-									//fmt.Println(arg)
-									argument := &argument{
-										arg.Name,
-										make([]string, 0),
-										_type.Name,
-									}
-									command.arguments = append(command.arguments, argument)
-								}
-							} else {
-								return nil, errors.New("argument type is not of type ast.Ident")
+						if isExported(funcDecl.Name.Name) {
+							command := &command{
+								strings.ToLower(funcDecl.Name.Name),
+								funcDecl.Name.Name,
+								"",
+								make([]*argument, 0),
 							}
-						}
 
-						commands = append(commands, command)
+							for _, argList := range funcDecl.Type.Params.List {
+								if _type, ok := argList.Type.(*ast.Ident); ok {
+									for _, arg := range argList.Names {
+										//fmt.Println(arg)
+										argument := &argument{
+											arg.Name,
+											make([]string, 0),
+											_type.Name,
+										}
+										command.arguments = append(command.arguments, argument)
+									}
+								} else {
+									return nil, errors.New("cannot create a sub-command based on a function that " +
+										"requires a non-atomic argument. function name: " + funcDecl.Name.Name)
+								}
+							}
+
+							commands = append(commands, command)
+						} else {
+							return nil, errors.New("cannot create a sub-command based on an unexported function. " +
+								"function name: " + funcDecl.Name.Name)
+						}
 					}
 				}
 			}
@@ -156,6 +162,6 @@ func parseAnnotations(pkg *ast.Package) ([]*command, error) {
 //	return annotations
 //}
 //
-//func isExported(functionName string) bool {
-//	return functionName[0] >= 'A' && functionName[0] <= 'Z'
-//}
+func isExported(functionName string) bool {
+	return functionName[0] >= 'A' && functionName[0] <= 'Z'
+}
