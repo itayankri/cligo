@@ -79,7 +79,6 @@ func parseAnnotations(pkg *ast.Package) ([]*command, error) {
 							command := &command{
 								strings.ToLower(funcDecl.Name.Name),
 								funcDecl.Name.Name,
-								"",
 								make([]*argument, 0),
 							}
 
@@ -89,7 +88,6 @@ func parseAnnotations(pkg *ast.Package) ([]*command, error) {
 										//fmt.Println(arg)
 										argument := &argument{
 											arg.Name,
-											make([]string, 0),
 											_type.Name,
 										}
 										command.arguments = append(command.arguments, argument)

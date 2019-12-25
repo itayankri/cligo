@@ -182,7 +182,7 @@ case "%s":
 		}
 		%s.%s(`+generateArguments(command)+`)
 	}
-	`, command.name, command.name, packageName, command.funcName)
+	`, command.name, command.name, packageName, command.funcName, command.name)
 }
 
 func generateArguments(command command) string {
