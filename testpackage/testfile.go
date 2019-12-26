@@ -12,22 +12,22 @@ const a1 = 4
 
 // A is an exported function called A
 // Test comment
-// @CLIGO_COMMAND
-// @CLIGO_OPTION(option1: O1)
-// @CLIGO_OPTION(option2: O2)
-// @CLIGO_ARGUMENT(arg1: x)
-// @CLIGO_ARGUMENT(arg2: y)
-func Remove( /*option1, option2 bool, arg1, arg2 int*/ ) {
+// @CLIGO_COMMAND("a description for the remove sub-command")
+// @CLIGO_OPTION(option1: "a description for option1")
+// @CLIGO_OPTION(option2: "a description for option2")
+// @CLIGO_ARGUMENT(arg1: "a description for arg1")
+// @CLIGO_ARGUMENT(arg2: "a description for arg2")
+func Remove(option1, option2 bool, arg1, arg2 int) {
 	fmt.Println("executing function Remove()")
 }
 
-// @CLIGO_COMMAND
+// @CLIGO_COMMAND()
 // a is an unexported function called a
 func Install() {
 	fmt.Println("executing function Install()")
 }
 
-// @CLIGO_COMMAND
+// @CLIGO_COMMAND()
 // @CLIGO_ARGUMENT(a: min)
 // @CLIGO_ARGUMENT(b: max)
 // B is an exported function called B
@@ -52,7 +52,7 @@ func fn() {
 
 /*
 Z is an exported function called Z
-@CLIGO_COMMAND
+@CLIGO_COMMAND()
 */
 func Chumis() {
 	fmt.Println("executing function Chumis()")
