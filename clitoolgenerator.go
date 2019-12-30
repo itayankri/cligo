@@ -4,10 +4,13 @@ import (
 	"fmt"
 	"github.com/pkg/errors"
 	"io/ioutil"
+	"os"
 	"os/exec"
+	"path/filepath"
 )
 
-func generateCLITool(packageName, pathToPackage string, commands []*command) error {
+func generateCLITool(outputPath, packageName, pathToPackage string, verbose bool, commands []*command) error {
+	fmt.Println("--> Generating Cli Tool code")
 	file := fmt.Sprintf(`
 // Package declaration
 %s
@@ -19,16 +22,45 @@ func generateCLITool(packageName, pathToPackage string, commands []*command) err
 %s
 	`, generatePackage(packageName), generateImports(pathToPackage), generateMain(packageName, commands))
 
-	err := ioutil.WriteFile("executables/"+packageName+"_cligo.go", []byte(file), 0644)
+	goFilePath := filepath.Join(outputPath, packageName+"_cligo.go")
+	cliToolPath := filepath.Join(outputPath, packageName+"-cli.exe")
+
+	if verbose {
+		fmt.Println("--> Writing Cli Tool code to ", goFilePath)
+	}
+
+	err := ioutil.WriteFile(goFilePath, []byte(file), 0644)
 	if err != nil {
 		return errors.Wrap(err, "failed to write go file")
 	}
 
-	cmd := exec.Command("go", "build", "-o", "executables/"+packageName+"-cli.exe", "executables/"+packageName+"_cligo.go")
+	cmd := exec.Command(
+		"go",
+		"build",
+		"-o",
+		cliToolPath,
+		goFilePath)
+
+	if verbose {
+		fmt.Println("--> Compiling Cli Tool executable at ", outputPath)
+	}
 
 	err = cmd.Run()
 	if err != nil {
 		return errors.Wrap(err, "failed to compile go file")
+	}
+
+	if verbose {
+		fmt.Println("--> Removing go file")
+	}
+
+	err = os.Remove(goFilePath)
+	if err != nil {
+		return errors.Wrap(err, "failed to remove go code")
+	}
+
+	if verbose {
+		fmt.Println("--> Cli Tool generated successfully")
 	}
 
 	return nil
@@ -182,7 +214,7 @@ case "%s":
 		}
 		%s.%s(`+generateArguments(command)+`)
 	}
-	`, command.name, command.name, packageName, command.funcName, command.name)
+	`, command.name, command.name, packageName, command.funcName)
 }
 
 func generateArguments(command command) string {
