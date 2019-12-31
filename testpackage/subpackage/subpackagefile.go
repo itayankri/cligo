@@ -1,0 +1,5 @@
+package subpackage
+
+func CliTest() {
+
+}

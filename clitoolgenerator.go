@@ -125,71 +125,71 @@ func generateFlags(commands []*command) string {
 	flags := ""
 
 	for _, cmd := range commands {
-		for _, arg := range cmd.arguments {
-			flags += generateFlag(cmd.name, *arg)
+		for _, opt := range cmd.options {
+			flags += generateFlag(cmd.name, *opt)
 		}
 	}
 
 	return flags
 }
 
-func generateFlag(cmdName string, arg argument) string {
-	switch arg._type {
+func generateFlag(cmdName string, opt option) string {
+	switch opt._type {
 	case "int":
 		{
 			return fmt.Sprintf("%s_%s := %s.Int(\"%s\", 0, \"Explanation here\")\n",
 				cmdName,
-				arg.name,
+				opt.name,
 				cmdName,
-				arg.name)
+				opt.name)
 		}
 	case "int64":
 		{
 			return fmt.Sprintf("%s_%s := %s.Int64(\"%s\", 0, \"Explanation here\")\n",
 				cmdName,
-				arg.name,
+				opt.name,
 				cmdName,
-				arg.name)
+				opt.name)
 		}
 	case "uint":
 		{
 			return fmt.Sprintf("%s_%s := %s.Uint(\"%s\", 0, \"Explanation here\")\n",
 				cmdName,
-				arg.name,
+				opt.name,
 				cmdName,
-				arg.name)
+				opt.name)
 		}
 	case "uint64":
 		{
 			return fmt.Sprintf("%s_%s := %s.Uint64(\"%s\", 0, \"Explanation here\")\n",
 				cmdName,
-				arg.name,
+				opt.name,
 				cmdName,
-				arg.name)
+				opt.name)
 		}
 	case "float64":
 		{
 			return fmt.Sprintf("%s_%s := %s.Float64(\"%s\", 0, \"Explanation here\")\n",
 				cmdName,
-				arg.name,
+				opt.name,
 				cmdName,
-				arg.name)
+				opt.name)
 		}
 	case "string":
 		{
 			return fmt.Sprintf("%s_%s := %s.String(\"%s\", \"\", \"Explanation here\")\n",
 				cmdName,
-				arg.name,
+				opt.name,
 				cmdName,
-				arg.name)
+				opt.name)
 		}
 	case "bool":
 		{
 			return fmt.Sprintf("%s_%s := %s.Bool(\"%s\", false, \"Explanation here\")\n",
 				cmdName,
-				arg.name,
+				opt.name,
 				cmdName,
-				arg.name)
+				opt.name)
 		}
 	}
 
@@ -228,14 +228,14 @@ case "%s":
 }
 
 func generateArguments(command command) string {
-	if command.arguments == nil || len(command.arguments) == 0 {
+	if command.options == nil || len(command.options) == 0 {
 		return ""
 	}
 
 	arguments := ""
 
-	for _, arg := range command.arguments {
-		arguments += "*" + command.name + "_" + arg.name + ","
+	for _, opt := range command.options {
+		arguments += "*" + command.name + "_" + opt.name + ","
 	}
 
 	return arguments[:len(arguments)-1]

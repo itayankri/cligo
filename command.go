@@ -7,9 +7,9 @@ const (
 )
 
 type command struct {
-	name      string
-	funcName  string
-	arguments []*argument
+	name     string
+	funcName string
+	options  []*option
 }
 
 type argument struct {

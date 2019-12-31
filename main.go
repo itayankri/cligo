@@ -10,6 +10,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 )
 
@@ -148,18 +149,18 @@ func parseAnnotations(pkg *ast.Package) ([]*command, error) {
 							command := &command{
 								strings.ToLower(funcDecl.Name.Name),
 								funcDecl.Name.Name,
-								make([]*argument, 0),
+								make([]*option, 0),
 							}
 
 							for _, argList := range funcDecl.Type.Params.List {
 								if _type, ok := argList.Type.(*ast.Ident); ok {
 									for _, arg := range argList.Names {
 										//fmt.Println(arg)
-										argument := &argument{
+										option := &option{
 											arg.Name,
 											_type.Name,
 										}
-										command.arguments = append(command.arguments, argument)
+										command.options = append(command.options, option)
 									}
 								} else {
 									return nil, errors.New("cannot create a sub-command based on a function that " +
@@ -179,6 +180,31 @@ func parseAnnotations(pkg *ast.Package) ([]*command, error) {
 	}
 
 	return commands, nil
+}
+
+func extractCliFunctions(pkg *ast.Package) {
+	for _, file := range pkg.Files {
+		for _, decl := range file.Decls {
+			if funcDecl, ok := decl.(*ast.FuncDecl); ok {
+				if isCliFunction(funcDecl) {
+					fmt.Println(funcDecl.Name.Name)
+				}
+			}
+		}
+	}
+}
+
+func isCliFunction(funcDecl *ast.FuncDecl) bool {
+	if funcDecl == nil {
+		return false
+	}
+
+	matched, err := regexp.MatchString("^Cli.*", funcDecl.Name.Name)
+	if err != nil {
+		panic(err)
+	}
+
+	return matched
 }
 
 func isExported(functionName string) bool {
