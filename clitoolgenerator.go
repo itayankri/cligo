@@ -10,10 +10,10 @@ import (
 )
 
 type CliToolGeneratorConfig struct {
-	outputPath    string
-	packageName   string
-	pathToPackage string
-	verbose       bool
+	outputPath   string
+	packageName  string
+	importString string
+	verbose      bool
 }
 
 func generateCLITool(config CliToolGeneratorConfig, commands []*command) error {
@@ -30,7 +30,7 @@ func generateCLITool(config CliToolGeneratorConfig, commands []*command) error {
 
 // Main func
 %s
-	`, generatePackage(config.packageName), generateImports(config.pathToPackage), generateMain(config.packageName, commands))
+	`, generatePackage(config.packageName), generateImports(config.importString), generateMain(config.packageName, commands))
 
 	goFilePath := filepath.Join(config.outputPath, config.packageName+"_cligo.go")
 	cliToolPath := filepath.Join(config.outputPath, config.packageName+"-cli.exe")

@@ -1,9 +1,9 @@
 package main
 
 import (
-	"errors"
 	"flag"
 	"fmt"
+	"github.com/pkg/errors"
 	"go/ast"
 	"go/parser"
 	"go/token"
@@ -20,7 +20,12 @@ func main() {
 	goPath := os.Getenv("GOPATH")
 
 	// Calculate the absolute path of the package.
-	pathToPackageDir := filepath.Join(goPath, "src", cliToolGeneratorConfig.pathToPackage)
+	pathToPackageDir := filepath.Join(goPath, "src", cliToolGeneratorConfig.importString)
+
+	// Check if the path to the package directory does not exist.
+	if _, err := os.Stat(pathToPackageDir); os.IsNotExist(err) {
+		handleError(err)
+	}
 
 	// Crete a new file set.
 	fset := token.NewFileSet()
@@ -33,20 +38,25 @@ func main() {
 		parser.ParseComments)
 
 	if err != nil {
-		panic(err)
+		handleError(errors.Wrap(err, "failed to parse golang package"))
 	}
 
 	// Phase 1 - Extract all the data from the given package
 	commands, err := parseAnnotations(packages[cliToolGeneratorConfig.packageName])
 	if err != nil {
-		panic(err)
+		handleError(err)
 	}
 
 	// Phase 2 - Call a function that creates a cli tool
 	err = generateCLITool(cliToolGeneratorConfig, commands)
 	if err != nil {
-		panic(err)
+		handleError(err)
 	}
+}
+
+func handleError(err error) {
+	fmt.Println("Cligo Error: ", err.Error())
+	os.Exit(2)
 }
 
 func handleCli() CliToolGeneratorConfig {
@@ -78,7 +88,7 @@ func handleCli() CliToolGeneratorConfig {
 	flag.BoolVar(&isVerbose,
 		"verbose",
 		false,
-		"")
+		"Print to console progress messages.")
 
 	// Parse the -help flag into isHelp
 	flag.BoolVar(&isHelp,
@@ -90,10 +100,10 @@ func handleCli() CliToolGeneratorConfig {
 	flag.Parse()
 
 	// Get the path to the golang package which is the input of our cli tool generator.
-	pathToGolangPackage := strings.ReplaceAll(flag.Arg(0), "\\", "/")
+	importString := strings.ReplaceAll(flag.Arg(0), "\\", "/")
 
 	// Get the last element in the path, which is the name of the package.
-	packageName := filepath.Base(pathToGolangPackage)
+	packageName := filepath.Base(importString)
 
 	// If the user used the help flag print usage page, not matter what other
 	// flags he used.
@@ -103,10 +113,10 @@ func handleCli() CliToolGeneratorConfig {
 	}
 
 	return CliToolGeneratorConfig{
-		outputPath:    outputPath,
-		packageName:   packageName,
-		pathToPackage: pathToGolangPackage,
-		verbose:       isVerbose,
+		outputPath:   outputPath,
+		packageName:  packageName,
+		importString: importString,
+		verbose:      isVerbose,
 	}
 }
 
