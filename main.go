@@ -121,8 +121,12 @@ func handleCli() CliToolGeneratorConfig {
 }
 
 func printUsage() {
+	fmt.Println()
+	fmt.Println("A CLI Tool that generates CLI Tools from golang packages.")
+	fmt.Println()
 	fmt.Println("Usage of CLIGO: ")
-	fmt.Println("\tcligo [OPTIONS] <PATH_TO_GOLANG_PACKAGE>\n")
+	fmt.Println("\tcligo [OPTIONS] <IMPORT STRING>")
+	fmt.Println()
 	fmt.Println("Options:")
 	flag.PrintDefaults()
 }
@@ -177,54 +181,6 @@ func parseAnnotations(pkg *ast.Package) ([]*command, error) {
 	return commands, nil
 }
 
-//func getAllExportedFunctions(pkg *ast.Package) []*ast.FuncDecl {
-//	exportedFunctions := make([]*ast.FuncDecl, 0)
-//
-//	for _, file := range pkg.Files {
-//		for _, decl := range file.Decls {
-//			if funcDecl, ok := decl.(*ast.FuncDecl); ok {
-//				if isExported(funcDecl.Name.Name) {
-//					exportedFunctions = append(exportedFunctions, funcDecl)
-//				}
-//
-//				annotations := getAnnotations(funcDecl.Name.Name, funcDecl.Doc)
-//				for index, ann := range annotations {
-//					fmt.Printf("annotation #%d - %s\n", index, *ann)
-//				}
-//			}
-//		}
-//	}
-//
-//	return exportedFunctions
-//}
-//
-//func getAnnotations(functionName string, doc *ast.CommentGroup) []*annotation {
-//	if doc == nil {
-//		return nil
-//	}
-//
-//	annotations := make([]*annotation, 0)
-//
-//	for _, comment := range doc.List {
-//		switch {
-//		case strings.Contains(comment.Text, string(CLIGO_COMMAND)):
-//			{
-//				annotations = append(annotations, &annotation{CLIGO_COMMAND, functionName, ""})
-//				command, err := parseCommandAnnotation(functionName, comment.Text)
-//				if err != nil {
-//					return nil
-//				}
-//			}
-//		case strings.Contains(comment.Text, string(CLIGO_ARGUMENT)):
-//			{
-//				annotations = append(annotations, &annotation{CLIGO_ARGUMENT, "", ""})
-//			}
-//		}
-//	}
-//
-//	return annotations
-//}
-//
 func isExported(functionName string) bool {
 	return functionName[0] >= 'A' && functionName[0] <= 'Z'
 }
