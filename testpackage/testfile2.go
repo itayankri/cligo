@@ -6,15 +6,15 @@ func CliAdd(x, y float64) {
 	fmt.Println(x + y)
 }
 
-func CliAddMany(nums ...float64) {
-	var sum float64
-
-	for _, num := range nums {
-		sum += num
-	}
-
-	fmt.Println(sum)
-}
+//func CliAddMany(nums ...float64) {
+//	var sum float64
+//
+//	for _, num := range nums {
+//		sum += num
+//	}
+//
+//	fmt.Println(sum)
+//}
 
 func CliSub(x, y float64) {
 	fmt.Println(x - y)

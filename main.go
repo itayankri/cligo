@@ -138,42 +138,29 @@ func parseAnnotations(pkg *ast.Package) ([]*command, error) {
 	for _, file := range pkg.Files {
 		for _, decl := range file.Decls {
 			if funcDecl, ok := decl.(*ast.FuncDecl); ok {
-				tokens, err := lex(funcDecl.Doc.Text())
-				if err != nil {
-					return nil, err
-				}
+				if isCliFunction(funcDecl) {
+					command := &command{
+						strings.ToLower(funcDecl.Name.Name[3:]),
+						funcDecl.Name.Name,
+						make([]*option, 0),
+					}
 
-				for _, tok := range tokens {
-					if tok.value == string(CLIGO_COMMAND) {
-						if isExported(funcDecl.Name.Name) {
-							command := &command{
-								strings.ToLower(funcDecl.Name.Name),
-								funcDecl.Name.Name,
-								make([]*option, 0),
-							}
-
-							for _, argList := range funcDecl.Type.Params.List {
-								if _type, ok := argList.Type.(*ast.Ident); ok {
-									for _, arg := range argList.Names {
-										//fmt.Println(arg)
-										option := &option{
-											arg.Name,
-											_type.Name,
-										}
-										command.options = append(command.options, option)
-									}
-								} else {
-									return nil, errors.New("cannot create a sub-command based on a function that " +
-										"requires a non-atomic argument. function name: " + funcDecl.Name.Name)
+					for _, argList := range funcDecl.Type.Params.List {
+						if _type, ok := argList.Type.(*ast.Ident); ok {
+							for _, arg := range argList.Names {
+								option := &option{
+									arg.Name,
+									_type.Name,
 								}
+								command.options = append(command.options, option)
 							}
-
-							commands = append(commands, command)
 						} else {
-							return nil, errors.New("cannot create a sub-command based on an unexported function. " +
-								"function name: " + funcDecl.Name.Name)
+							return nil, errors.New("cannot create a sub-command based on a function that " +
+								"requires a non-atomic argument. function name: " + funcDecl.Name.Name)
 						}
 					}
+
+					commands = append(commands, command)
 				}
 			}
 		}
