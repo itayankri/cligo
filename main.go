@@ -14,16 +14,13 @@ import (
 )
 
 func main() {
-	outputPath, pathToGolangPackageInGopath := handleCli()
+	cliToolGeneratorConfig := handleCli()
 
 	// TODO: fix later
 	goPath := os.Getenv("GOPATH")
 
 	// Calculate the absolute path of the package.
-	pathToPackageDir := filepath.Join(goPath, "src", pathToGolangPackageInGopath)
-
-	// Get the last element in the path, which is the name of the package.
-	packageName := filepath.Base(pathToGolangPackageInGopath)
+	pathToPackageDir := filepath.Join(goPath, "src", cliToolGeneratorConfig.pathToPackage)
 
 	// Crete a new file set.
 	fset := token.NewFileSet()
@@ -40,19 +37,19 @@ func main() {
 	}
 
 	// Phase 1 - Extract all the data from the given package
-	commands, err := parseAnnotations(packages[packageName])
+	commands, err := parseAnnotations(packages[cliToolGeneratorConfig.packageName])
 	if err != nil {
 		panic(err)
 	}
 
 	// Phase 2 - Call a function that creates a cli tool
-	err = generateCLITool(outputPath, packageName, pathToGolangPackageInGopath, true, commands)
+	err = generateCLITool(cliToolGeneratorConfig, commands)
 	if err != nil {
 		panic(err)
 	}
 }
 
-func handleCli() (outputPath, pathToGolangPackage string) {
+func handleCli() CliToolGeneratorConfig {
 	// If the user did now provide one argument, exit the program.
 	if len(os.Args) < 2 {
 		fmt.Println("Path to Golang package must be provided. Use -help for more information")
@@ -61,8 +58,9 @@ func handleCli() (outputPath, pathToGolangPackage string) {
 
 	// A variable that will be populated by the flags "o" or "output"
 	var (
-		isHelp    bool
-		isVerbose bool
+		isHelp     bool
+		isVerbose  bool
+		outputPath string
 	)
 
 	currentWorkingDirectory, err := filepath.Abs(filepath.Dir(os.Args[0]))
@@ -92,7 +90,10 @@ func handleCli() (outputPath, pathToGolangPackage string) {
 	flag.Parse()
 
 	// Get the path to the golang package which is the input of our cli tool generator.
-	pathToGolangPackage = strings.ReplaceAll(flag.Arg(0), "\\", "/")
+	pathToGolangPackage := strings.ReplaceAll(flag.Arg(0), "\\", "/")
+
+	// Get the last element in the path, which is the name of the package.
+	packageName := filepath.Base(pathToGolangPackage)
 
 	// If the user used the help flag print usage page, not matter what other
 	// flags he used.
@@ -101,7 +102,12 @@ func handleCli() (outputPath, pathToGolangPackage string) {
 		os.Exit(0)
 	}
 
-	return
+	return CliToolGeneratorConfig{
+		outputPath:    outputPath,
+		packageName:   packageName,
+		pathToPackage: pathToGolangPackage,
+		verbose:       isVerbose,
+	}
 }
 
 func printUsage() {

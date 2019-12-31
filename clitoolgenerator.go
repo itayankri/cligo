@@ -9,8 +9,18 @@ import (
 	"path/filepath"
 )
 
-func generateCLITool(outputPath, packageName, pathToPackage string, verbose bool, commands []*command) error {
-	fmt.Println("--> Generating Cli Tool code")
+type CliToolGeneratorConfig struct {
+	outputPath    string
+	packageName   string
+	pathToPackage string
+	verbose       bool
+}
+
+func generateCLITool(config CliToolGeneratorConfig, commands []*command) error {
+	if config.verbose {
+		fmt.Println("--> Generating Cli Tool code")
+	}
+
 	file := fmt.Sprintf(`
 // Package declaration
 %s
@@ -20,12 +30,12 @@ func generateCLITool(outputPath, packageName, pathToPackage string, verbose bool
 
 // Main func
 %s
-	`, generatePackage(packageName), generateImports(pathToPackage), generateMain(packageName, commands))
+	`, generatePackage(config.packageName), generateImports(config.pathToPackage), generateMain(config.packageName, commands))
 
-	goFilePath := filepath.Join(outputPath, packageName+"_cligo.go")
-	cliToolPath := filepath.Join(outputPath, packageName+"-cli.exe")
+	goFilePath := filepath.Join(config.outputPath, config.packageName+"_cligo.go")
+	cliToolPath := filepath.Join(config.outputPath, config.packageName+"-cli.exe")
 
-	if verbose {
+	if config.verbose {
 		fmt.Println("--> Writing Cli Tool code to ", goFilePath)
 	}
 
@@ -41,8 +51,8 @@ func generateCLITool(outputPath, packageName, pathToPackage string, verbose bool
 		cliToolPath,
 		goFilePath)
 
-	if verbose {
-		fmt.Println("--> Compiling Cli Tool executable at ", outputPath)
+	if config.verbose {
+		fmt.Println("--> Compiling Cli Tool executable at ", config.outputPath)
 	}
 
 	err = cmd.Run()
@@ -50,7 +60,7 @@ func generateCLITool(outputPath, packageName, pathToPackage string, verbose bool
 		return errors.Wrap(err, "failed to compile go file")
 	}
 
-	if verbose {
+	if config.verbose {
 		fmt.Println("--> Removing go file")
 	}
 
@@ -59,7 +69,7 @@ func generateCLITool(outputPath, packageName, pathToPackage string, verbose bool
 		return errors.Wrap(err, "failed to remove go code")
 	}
 
-	if verbose {
+	if config.verbose {
 		fmt.Println("--> Cli Tool generated successfully")
 	}
 
