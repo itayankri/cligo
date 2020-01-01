@@ -17,7 +17,7 @@ func CliSub(x, y float64) {
 }
 
 //cligo:command "Multiplying numbers"
-//cligo:option x "Multiplied number"
+//cligo:option x2 "Multiplied number"
 //cligo:option y "Multiplier"
 func CliMul(x, y float64) {
 	fmt.Println(x * y)

@@ -81,11 +81,11 @@ func parseCommand(funcDecl *ast.FuncDecl) (*command, error) {
 			case CLIGO_COMMAND:
 				{
 					if len(tokens) != 2 {
-						return nil, errors.New("an argument comment must contain exactly one element")
+						return nil, errors.New("an argument directive must contain exactly one element")
 					}
 
 					if tokens[1].kind != STRING {
-						return nil, errors.New("a command comment's element must be STRING")
+						return nil, errors.New("a command directive's element must be STRING")
 					}
 
 					command.description = tokens[1].value
@@ -94,14 +94,14 @@ func parseCommand(funcDecl *ast.FuncDecl) (*command, error) {
 				{
 					opt, err := parseOption(tokens[1:])
 					if err != nil {
-						return nil, errors.Wrap(err, "failed to parse CLIGO option comment: "+comment.Text)
+						return nil, errors.Wrap(err, "failed to parse CLIGO option directive: "+comment.Text)
 					}
 
 					if v, ok := paramsMap[opt.name]; ok {
 						opt._type = v
 						command.options = append(command.options, opt)
 					} else {
-						return nil, errors.New("could not parse comment for option - " +
+						return nil, errors.New("could not parse option directive with name - " +
 							opt.name +
 							": param does not exist")
 					}
@@ -110,21 +110,21 @@ func parseCommand(funcDecl *ast.FuncDecl) (*command, error) {
 				{
 					arg, err := parseArgument(tokens[1:])
 					if err != nil {
-						return nil, errors.Wrap(err, "failed to parse CLIGO argument comment: "+comment.Text)
+						return nil, errors.Wrap(err, "failed to parse CLIGO argument directive: "+comment.Text)
 					}
 
 					if v, ok := paramsMap[arg.name]; ok {
 						arg._type = v
 						command.arguments = append(command.arguments, arg)
 					} else {
-						return nil, errors.New("could not parse comment for argument - " +
+						return nil, errors.New("could not parse argument directive with name - " +
 							arg.name +
 							": param does not exist")
 					}
 				}
 			default:
 				{
-					return nil, errors.New("invalid beginning of CLIGO comment: " + tokens[0].value)
+					return nil, errors.New("invalid beginning of CLIGO directive: " + tokens[0].value)
 				}
 			}
 
@@ -136,15 +136,15 @@ func parseCommand(funcDecl *ast.FuncDecl) (*command, error) {
 
 func parseArgument(tokens []*Token) (*argument, error) {
 	if len(tokens) != 2 {
-		return nil, errors.New("an argument comment must contain exactly two elements")
+		return nil, errors.New("an argument directive must contain exactly two elements")
 	}
 
 	if tokens[0].kind != NAME {
-		return nil, errors.New("an argument comment's first element must be NAME")
+		return nil, errors.New("an argument directive's first element must be NAME")
 	}
 
 	if tokens[1].kind != STRING {
-		return nil, errors.New("an argument comment's first element must be STRING")
+		return nil, errors.New("an argument directive's first element must be STRING")
 	}
 
 	return &argument{
@@ -155,15 +155,15 @@ func parseArgument(tokens []*Token) (*argument, error) {
 
 func parseOption(tokens []*Token) (*option, error) {
 	if len(tokens) != 2 {
-		return nil, errors.New("an option comment must contain exactly two elements")
+		return nil, errors.New("an option directive must contain exactly two elements")
 	}
 
 	if tokens[0].kind != NAME {
-		return nil, errors.New("an option comment's first element must be NAME")
+		return nil, errors.New("an option directive's first element must be NAME")
 	}
 
 	if tokens[1].kind != STRING {
-		return nil, errors.New("an option comment's first element must be STRING")
+		return nil, errors.New("an option directive's first element must be STRING")
 	}
 
 	return &option{
