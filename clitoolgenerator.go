@@ -14,6 +14,7 @@ type CliToolGeneratorConfig struct {
 	packageName  string
 	importString string
 	verbose      bool
+	keepSource   bool
 }
 
 func generateCLITool(config CliToolGeneratorConfig, commands []*command) error {
@@ -60,13 +61,15 @@ func generateCLITool(config CliToolGeneratorConfig, commands []*command) error {
 		return errors.Wrap(err, "failed to compile go file")
 	}
 
-	if config.verbose {
-		fmt.Println("--> Removing go file")
-	}
+	if !config.keepSource {
+		if config.verbose {
+			fmt.Println("--> Removing go file")
+		}
 
-	err = os.Remove(goFilePath)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove go code")
+		err = os.Remove(goFilePath)
+		if err != nil {
+			return errors.Wrap(err, "failed to remove go code")
+		}
 	}
 
 	if config.verbose {

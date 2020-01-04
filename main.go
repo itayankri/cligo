@@ -69,8 +69,9 @@ func handleCli() CliToolGeneratorConfig {
 
 	// A variable that will be populated by the flags "o" or "output"
 	var (
-		isHelp     bool
-		isVerbose  bool
+		help       bool
+		verbose    bool
+		keepSource bool
 		outputPath string
 	)
 
@@ -86,13 +87,19 @@ func handleCli() CliToolGeneratorConfig {
 		"A path which the cli tool will be written to.")
 
 	// Parse the -verbose flag into isVerbose
-	flag.BoolVar(&isVerbose,
+	flag.BoolVar(&verbose,
 		"verbose",
 		false,
 		"Print to console progress messages.")
 
+	// Parse the -keepSource flag into isVerbose
+	flag.BoolVar(&keepSource,
+		"keepSource",
+		false,
+		"Keep the go source file in the file system instead of removing it.")
+
 	// Parse the -help flag into isHelp
-	flag.BoolVar(&isHelp,
+	flag.BoolVar(&help,
 		"help",
 		false,
 		"Usage Explanation.")
@@ -108,7 +115,7 @@ func handleCli() CliToolGeneratorConfig {
 
 	// If the user used the help flag print usage page, not matter what other
 	// flags he used.
-	if isHelp {
+	if help {
 		printUsage()
 		os.Exit(0)
 	}
@@ -117,7 +124,8 @@ func handleCli() CliToolGeneratorConfig {
 		outputPath:   outputPath,
 		packageName:  packageName,
 		importString: importString,
-		verbose:      isVerbose,
+		verbose:      verbose,
+		keepSource:   keepSource,
 	}
 }
 
