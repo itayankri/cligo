@@ -86,6 +86,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strconv"
 	"%s"
 )
 	`, pathToPackage)
@@ -133,63 +134,121 @@ func generateFlags(commands []*command) string {
 	return flags
 }
 
+func generateCommandArguments(command command) string {
+	commandArguments := ""
+
+	for index, arg := range command.arguments {
+		commandArguments += generateCommandArgument(index, command.name, *arg)
+	}
+
+	return commandArguments
+}
+
+func generateCommandArgument(argIndex int, cmdName string, arg argument) string {
+	switch arg._type {
+	case "int64", "int":
+		{
+			return fmt.Sprintf(`%s_%s, err := strconv.ParseInt(%s.Arg(%d), 10, 64)
+	if err != nil {
+		fmt.Println("arg %s expected to be of type int")
+		os.Exit(2)
+	}
+`,
+				cmdName, arg.name, cmdName, argIndex, arg.name)
+		}
+	case "float64":
+		{
+			return fmt.Sprintf(`%s_%s, err := strconv.ParseFloat(%s.Arg(%d), 64)
+	if err != nil {
+		fmt.Println("arg %s expected to be of type float")
+		os.Exit(2)
+	}
+`,
+				cmdName, arg.name, cmdName, argIndex, arg.name)
+		}
+	case "string":
+		{
+			return fmt.Sprintf(`%s_%s := %s.Arg(%d)`, cmdName, arg.name, cmdName, argIndex)
+		}
+	case "bool":
+		{
+			return fmt.Sprintf(`%s_%s, err := strconv.ParseBool(%s.Arg(%d))
+	if err != nil {
+		fmt.Println("arg %s expected to be of type bool")
+		os.Exit(2)
+	}
+`,
+				cmdName, arg.name, cmdName, argIndex, arg.name)
+		}
+	}
+
+	return ""
+}
+
 func generateFlag(cmdName string, opt option) string {
 	switch opt._type {
 	case "int":
 		{
-			return fmt.Sprintf("%s_%s := %s.Int(\"%s\", 0, \"Explanation here\")\n",
+			return fmt.Sprintf("%s_%s := %s.Int(\"%s\", 0, \"%s\")\n",
 				cmdName,
 				opt.name,
 				cmdName,
-				opt.name)
+				opt.name,
+				opt.description)
 		}
 	case "int64":
 		{
-			return fmt.Sprintf("%s_%s := %s.Int64(\"%s\", 0, \"Explanation here\")\n",
+			return fmt.Sprintf("%s_%s := %s.Int64(\"%s\", 0, \"%s\")\n",
 				cmdName,
 				opt.name,
 				cmdName,
-				opt.name)
+				opt.name,
+				opt.description)
 		}
 	case "uint":
 		{
-			return fmt.Sprintf("%s_%s := %s.Uint(\"%s\", 0, \"Explanation here\")\n",
+			return fmt.Sprintf("%s_%s := %s.Uint(\"%s\", 0, \"%s\")\n",
 				cmdName,
 				opt.name,
 				cmdName,
-				opt.name)
+				opt.name,
+				opt.description)
 		}
 	case "uint64":
 		{
-			return fmt.Sprintf("%s_%s := %s.Uint64(\"%s\", 0, \"Explanation here\")\n",
+			return fmt.Sprintf("%s_%s := %s.Uint64(\"%s\", 0, \"%s\")\n",
 				cmdName,
 				opt.name,
 				cmdName,
-				opt.name)
+				opt.name,
+				opt.description)
 		}
 	case "float64":
 		{
-			return fmt.Sprintf("%s_%s := %s.Float64(\"%s\", 0, \"Explanation here\")\n",
+			return fmt.Sprintf("%s_%s := %s.Float64(\"%s\", 0, \"%s\")\n",
 				cmdName,
 				opt.name,
 				cmdName,
-				opt.name)
+				opt.name,
+				opt.description)
 		}
 	case "string":
 		{
-			return fmt.Sprintf("%s_%s := %s.String(\"%s\", \"\", \"Explanation here\")\n",
+			return fmt.Sprintf("%s_%s := %s.String(\"%s\", \"\", \"%s\")\n",
 				cmdName,
 				opt.name,
 				cmdName,
-				opt.name)
+				opt.name,
+				opt.description)
 		}
 	case "bool":
 		{
-			return fmt.Sprintf("%s_%s := %s.Bool(\"%s\", false, \"Explanation here\")\n",
+			return fmt.Sprintf("%s_%s := %s.Bool(\"%s\", false, \"%s\")\n",
 				cmdName,
 				opt.name,
 				cmdName,
-				opt.name)
+				opt.name,
+				opt.description)
 		}
 	}
 
@@ -216,19 +275,23 @@ func generateCases(packageName string, commands []*command) string {
 func generateCase(packageName string, command command) string {
 	return fmt.Sprintf(`
 case "%s":
-	{
-		err := %s.Parse(os.Args[2:])
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(2)
+{
+err := %s.Parse(os.Args[2:])
+if err != nil {
+fmt.Println(err)
+os.Exit(2)
+}
+
+		if %s.Parsed() {
+			%s
+			%s.%s(`+generateArguments(command)+`)
 		}
-		%s.%s(`+generateArguments(command)+`)
 	}
-	`, command.name, command.name, packageName, command.funcName)
+	`, command.name, command.name, command.name, generateCommandArguments(command), packageName, command.funcName)
 }
 
 func generateArguments(command command) string {
-	if command.options == nil || len(command.options) == 0 {
+	if command.options == nil && command.arguments == nil {
 		return ""
 	}
 
@@ -238,6 +301,10 @@ func generateArguments(command command) string {
 		arguments += "*" + command.name + "_" + opt.name + ","
 	}
 
+	for _, arg := range command.arguments {
+		arguments += command.name + "_" + arg.name + ","
+	}
+
 	return arguments[:len(arguments)-1]
 }
 
@@ -245,7 +312,6 @@ func generateDefaultCase() string {
 	return fmt.Sprintf(`
 default:
 	{
-		//panic(errors.New("unrecognized command - " + os.Args[1]))
 		fmt.Println("unrecognized command - " + os.Args[1] + ", use --help for more information")
 		os.Exit(1)
 	}
@@ -256,16 +322,18 @@ func generateHelpCase(packageName string, commands []*command) string {
 	return fmt.Sprintf(`
 case "--help", "-h":
 {
-	fmt.Println(`+"`%s`"+`)
+	%s
 }
 `, generateManPage(packageName, commands))
 }
 
 func generateManPage(packageName string, commands []*command) string {
-	man := fmt.Sprintf("\n [This CLI Tool has been generated by CLIGO]\n\n %s:\n", packageName)
+	man := fmt.Sprintf("fmt.Println(\"\\n [This CLI Tool has been generated by CLIGO]\\n\\n Usage of %s:\\n\")",
+		packageName)
 
 	for _, cmd := range commands {
-		man += fmt.Sprintf("    %s\t\t%s\n", cmd.name, cmd.description)
+		man += fmt.Sprintf("\nfmt.Println(\"\\n%s\\t%s\")", cmd.name, cmd.description)
+		man += fmt.Sprintf("\n%s.PrintDefaults()", cmd.name)
 	}
 
 	return man

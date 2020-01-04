@@ -17,15 +17,15 @@ func CliSub(x, y float64) {
 }
 
 //cligo:command "Multiplying numbers"
-//cligo:option x2 "Multiplied number"
+//cligo:option x "Multiplied number"
 //cligo:option y "Multiplier"
 func CliMul(x, y float64) {
 	fmt.Println(x * y)
 }
 
 //cligo:command "Dividing numbers"
-//cligo:option x "Divided number"
-//cligo:option y "Divider"
+//cligo:argument x "Divided number"
+//cligo:argument y "Divider"
 func CliDiv(x, y float64) {
 	if y == 0 {
 		fmt.Println("cannot divide number by 0")
