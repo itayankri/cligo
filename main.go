@@ -69,10 +69,11 @@ func handleCli() CliToolGeneratorConfig {
 
 	// A variable that will be populated by the flags "o" or "output"
 	var (
-		help       bool
-		verbose    bool
-		keepSource bool
-		outputPath string
+		help           bool
+		verbose        bool
+		keepSource     bool
+		outputPath     string
+		executableName string
 	)
 
 	currentWorkingDirectory, err := filepath.Abs(filepath.Dir(os.Args[0]))
@@ -86,19 +87,25 @@ func handleCli() CliToolGeneratorConfig {
 		currentWorkingDirectory,
 		"A path which the cli tool will be written to.")
 
-	// Parse the -verbose flag into isVerbose
+	// Parse the -exeName flag into executableName
+	flag.StringVar(&executableName,
+		"exeName",
+		"",
+		"The name of the executable file.")
+
+	// Parse the -verbose flag into verbose
 	flag.BoolVar(&verbose,
 		"verbose",
 		false,
 		"Print to console progress messages.")
 
-	// Parse the -keepSource flag into isVerbose
+	// Parse the -keepSource flag into keepSource
 	flag.BoolVar(&keepSource,
 		"keepSource",
 		false,
 		"Keep the go source file in the file system instead of removing it.")
 
-	// Parse the -help flag into isHelp
+	// Parse the -help flag into help
 	flag.BoolVar(&help,
 		"help",
 		false,
@@ -122,6 +129,7 @@ func handleCli() CliToolGeneratorConfig {
 
 	return CliToolGeneratorConfig{
 		outputPath:   outputPath,
+		exeName:      executableName,
 		packageName:  packageName,
 		importString: importString,
 		verbose:      verbose,

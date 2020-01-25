@@ -11,6 +11,7 @@ import (
 
 type CliToolGeneratorConfig struct {
 	outputPath   string
+	exeName      string
 	packageName  string
 	importString string
 	verbose      bool
@@ -33,8 +34,16 @@ func generateCLITool(config CliToolGeneratorConfig, commands []*command) error {
 %s
 	`, generatePackage(config.packageName), generateImports(config.importString), generateMain(config.packageName, commands))
 
+	exeName := ""
+
+	if config.exeName == "" {
+		exeName = config.packageName + "-cli"
+	} else {
+		exeName = config.exeName
+	}
+
 	goFilePath := filepath.Join(config.outputPath, config.packageName+"_cligo.go")
-	cliToolPath := filepath.Join(config.outputPath, config.packageName+"-cli.exe")
+	cliToolPath := filepath.Join(config.outputPath, exeName+".exe")
 
 	if config.verbose {
 		fmt.Println("--> Writing Cli Tool code to ", goFilePath)
